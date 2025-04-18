@@ -353,107 +353,28 @@ class _AdminHomeViewState extends State<AdminHomeView> {
             );
           }
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-              childAspectRatio: 0.6,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
+          // Agrupar aulas por nível
+          final basicLessons = lessonViewModel.lessons
+              .where((l) => l.level == 'básico')
+              .toList();
+          final intermediateLessons = lessonViewModel.lessons
+              .where((l) => l.level == 'intermediário')
+              .toList();
+          final advancedLessons = lessonViewModel.lessons
+              .where((l) => l.level == 'avançado')
+              .toList();
+
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildLevelSection('Nível Básico', basicLessons, Colors.green),
+                _buildLevelSection(
+                    'Nível Intermediário', intermediateLessons, Colors.orange),
+                _buildLevelSection(
+                    'Nível Avançado', advancedLessons, Colors.red),
+              ],
             ),
-            itemCount: lessonViewModel.lessons.length,
-            itemBuilder: (context, index) {
-              final lesson = lessonViewModel.lessons[index];
-              return Card(
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Image.network(
-                        lesson.thumbnailUrl ??
-                            'https://img.youtube.com/vi/${_getVideoId(lesson.videoUrl)}/maxresdefault.jpg',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            'assets/images/thumbCurso.png',
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              lesson.title,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              lesson.duration,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: _getLevelColor(lesson.level),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                lesson.level,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 40,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, size: 20),
-                            onPressed: () => _editLesson(lesson),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.delete, size: 20),
-                            onPressed: () => _deleteLesson(lesson),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
           );
         },
       ),
@@ -461,6 +382,141 @@ class _AdminHomeViewState extends State<AdminHomeView> {
         onPressed: _addLesson,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget _buildLevelSection(String title, List<Lesson> lessons, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+            childAspectRatio: 0.55,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: lessons.length,
+          itemBuilder: (context, index) {
+            final lesson = lessons[index];
+            return Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Image.network(
+                      lesson.thumbnailUrl ??
+                          'https://img.youtube.com/vi/${_getVideoId(lesson.videoUrl)}/maxresdefault.jpg',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          'assets/images/thumbCurso.png',
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lesson.title,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            lesson.duration,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _getLevelColor(lesson.level),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              lesson.level,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 40,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, size: 20),
+                          onPressed: () => _editLesson(lesson),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.delete, size: 20),
+                          onPressed: () => _deleteLesson(lesson),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 

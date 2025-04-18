@@ -148,9 +148,10 @@ class _StudentHomeViewState extends State<StudentHomeView> {
                   );
                 },
                 child: Card(
+                  clipBehavior: Clip.antiAlias,
                   margin: const EdgeInsets.all(8.0),
                   child: SizedBox(
-                    width: 200,
+                    width: 160,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -161,7 +162,8 @@ class _StudentHomeViewState extends State<StudentHomeView> {
                             errorBuilder: (context, error, stackTrace) {
                               return Image.asset(
                                 'assets/images/thumbCurso.png',
-                                fit: BoxFit.fill,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
                               );
                             },
                           ),
