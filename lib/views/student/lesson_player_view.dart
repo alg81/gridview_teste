@@ -16,10 +16,15 @@ class LessonPlayerView extends StatefulWidget {
 
 class _LessonPlayerViewState extends State<LessonPlayerView> {
   late YoutubePlayerController _controller;
+  bool _isClosing = false;
 
   @override
   void initState() {
     super.initState();
+    _initializePlayer();
+  }
+
+  void _initializePlayer() {
     _controller = YoutubePlayerController.fromVideoId(
       videoId: _extractVideoId(widget.lesson.videoUrl),
       params: const YoutubePlayerParams(
@@ -39,42 +44,68 @@ class _LessonPlayerViewState extends State<LessonPlayerView> {
     return '';
   }
 
+  void _closePlayer() {
+    debugPrint('Fechando o player...');
+    try {
+      _controller.close();
+      debugPrint('Player fechado com sucesso');
+    } catch (e) {
+      debugPrint('Erro ao fechar o player: $e');
+    }
+  }
+
   @override
   void dispose() {
-    _controller.close();
+    debugPrint('Dispose chamado');
+    _closePlayer();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.lesson.title),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          YoutubePlayer(
-            controller: _controller,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _closePlayer();
+        Navigator.of(context).pop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.lesson.title),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              _closePlayer();
+              Navigator.of(context).pop();
+            },
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.lesson.title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.lesson.description,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            YoutubePlayer(
+              controller: _controller,
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.lesson.title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.lesson.description,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
